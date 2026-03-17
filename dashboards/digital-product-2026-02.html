@@ -50,7 +50,6 @@ const data = [
   { member: "Laleesha Wijeratne",     activityPercent: 55.0, totalHours: 169.2, breakHours: 13.7, breakPercent: 8.1,  manualHours: 0.6, manualPercent: 0.4, low20Hours: 1.6, low20Percent: 0.9,  low30Hours: 8.1,  low30Percent: 4.8,  redFlags: 0, yellowFlags: 0, totalFlags: 0 },
   { member: "Modhuka Paranagama",     activityPercent: 62.0, totalHours: 172.1, breakHours: 15.2, breakPercent: 8.8,  manualHours: 8.0, manualPercent: 4.6, low20Hours: 2.0, low20Percent: 1.1,  low30Hours: 5.6,  low30Percent: 3.3,  redFlags: 0, yellowFlags: 0, totalFlags: 0 },
   { member: "Muhammad Usman",         activityPercent: 57.0, totalHours: 159.1, breakHours: 14.6, breakPercent: 9.2,  manualHours: 1.4, manualPercent: 0.8, low20Hours: 0.0, low20Percent: 0.0,  low30Hours: 1.2,  low30Percent: 0.8,  redFlags: 0, yellowFlags: 0, totalFlags: 0 },
-  { member: "Nishantha Hettiarachchi",activityPercent: 34.0, totalHours: 99.4,  breakHours: 6.7,  breakPercent: 6.7,  manualHours: 0.0, manualPercent: 0.0, low20Hours: 0.0, low20Percent: 0.0,  low30Hours: 29.7, low30Percent: 29.9, redFlags: 3, yellowFlags: 0, totalFlags: 3 },
   { member: "Ramez Sedra",            activityPercent: 54.0, totalHours: 177.0, breakHours: 11.4, breakPercent: 6.4,  manualHours: 0.3, manualPercent: 0.2, low20Hours: 2.6, low20Percent: 1.5,  low30Hours: 6.0,  low30Percent: 3.4,  redFlags: 0, yellowFlags: 0, totalFlags: 0 },
   { member: "Shehara Meadows",        activityPercent: 42.0, totalHours: 155.9, breakHours: 13.1, breakPercent: 8.4,  manualHours: 0.0, manualPercent: 0.0, low20Hours: 9.6, low20Percent: 6.1,  low30Hours: 24.0, low30Percent: 15.4, redFlags: 0, yellowFlags: 2, totalFlags: 2 },
   { member: "Thushan Fernando",       activityPercent: 52.0, totalHours: 178.5, breakHours: 11.9, breakPercent: 6.7,  manualHours: 0.0, manualPercent: 0.0, low20Hours: 11.1,low20Percent: 6.2,  low30Hours: 24.6, low30Percent: 13.8, redFlags: 0, yellowFlags: 1, totalFlags: 1 },
@@ -59,10 +58,11 @@ const data = [
 // Team sub-categories for Tab 3: Team Analytics
 // Format: { "Sub-Team Name": ["Member 1", "Member 2"], ... }
 const TEAM_CATEGORIES = {
-  "CRM": ["Adam Burdeshaw", "Chathuranga Weerakoon", "Dr. Yashoda Velananda", "Muhammad Usman"],
-  "BI & Data": ["Bihani Madushika", "Modhuka Paranagama"],
-  "Content & Catalog": ["Hasala Jayasuriya", "Laleesha Wijeratne", "Ramez Sedra", "Shehara Meadows", "Thushan Fernando"],
-  "Design & Platform": ["Kunchana Prabashwara", "Nishantha Hettiarachchi"]
+  "Site Content Team": ["Kunchana Prabashwara", "Ramez Sedra", "Shehara Meadows"],
+  "Catalog Team": ["Laleesha Wijeratne"],
+  "BI Team": ["Bihani Madushika", "Modhuka Paranagama"],
+  "Platform & Engineering Team": ["Hasala Jayasuriya", "Thushan Fernando"],
+  "CRM Team": ["Adam Burdeshaw", "Chathuranga Weerakoon", "Dr. Yashoda Velananda", "Muhammad Usman"],
 };
 // ============================================================================
 // END DATA BLOCK
@@ -581,7 +581,7 @@ const Dashboard = () => {
             const tMostHrs     = teamMembers.reduce((a,b) => a.totalHours > b.totalHours ? a : b);
             const tLeastHrs    = teamMembers.reduce((a,b) => a.totalHours < b.totalHours ? a : b);
 
-            // Key Conclusions
+            // Key Highlights
             const conclusions = [];
             conclusions.push({ color: '#276749', text: `${tHigh.member} leads the team with the highest activity at ${tHigh.activityPercent.toFixed(1)}%, maintaining strong engagement throughout the month.` });
             const actS = checkStatus('activity', tLow.activityPercent);
@@ -642,7 +642,7 @@ const Dashboard = () => {
                       </thead>
                       <tbody>
                         {teamSortedMembers(teamMembers).map((m,i) => (
-                          <tr key={i} style={{background:m.totalFlags>0?'#fff5f5':'transparent'}}>
+                          <tr key={i} style={{background:'transparent'}}>
                             <td style={{fontWeight:600,color:'#1a202c',fontSize:13,whiteSpace:'nowrap'}}>{m.member}</td>
                             <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('activity',m.activityPercent)}}>{m.activityPercent.toFixed(1)}%</td>
                             <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('hours',m.totalHours)}}>{m.totalHours.toFixed(1)}</td>
@@ -667,7 +667,7 @@ const Dashboard = () => {
 
                 {/* KEY CONCLUSIONS */}
                 <div style={{background:'#f7fafc',padding:20,borderRadius:8,border:'1px solid #e2e8f0',marginTop:16}}>
-                  <div style={{fontSize:16,fontWeight:700,color:'#2d3748',marginBottom:12}}>📋 Key Conclusions</div>
+                  <div style={{fontSize:16,fontWeight:700,color:'#2d3748',marginBottom:12}}>📋 Key Highlights</div>
                   {conclusions.map((c,i) => (
                     <div key={i} style={{display:'flex',alignItems:'flex-start',gap:8,fontSize:14,color:'#4a5568',lineHeight:1.6,marginBottom:8}}>
                       <span style={{color:c.color,fontWeight:700,flexShrink:0,fontSize:16}}>●</span>

@@ -45,6 +45,9 @@ const data = [
 ];
 
 // Team sub-categories for Tab 3: Team Analytics
+// Standard Digital Product sub-teams (update member lists each month):
+//   "Site Content Team", "Catalog Team", "BI Team",
+//   "Platform & Engineering Team", "CRM Team", "DP - Leads"
 // Format: { "Sub-Team Name": ["Member 1", "Member 2"], ... }
 const TEAM_CATEGORIES = {{TEAM_CATEGORIES}};
 // ============================================================================
@@ -564,7 +567,7 @@ const Dashboard = () => {
             const tMostHrs     = teamMembers.reduce((a,b) => a.totalHours > b.totalHours ? a : b);
             const tLeastHrs    = teamMembers.reduce((a,b) => a.totalHours < b.totalHours ? a : b);
 
-            // Key Conclusions
+            // Key Highlights
             const conclusions = [];
             conclusions.push({ color: '#276749', text: `${tHigh.member} leads the team with the highest activity at ${tHigh.activityPercent.toFixed(1)}%, maintaining strong engagement throughout the month.` });
             const actS = checkStatus('activity', tLow.activityPercent);
@@ -625,7 +628,7 @@ const Dashboard = () => {
                       </thead>
                       <tbody>
                         {teamSortedMembers(teamMembers).map((m,i) => (
-                          <tr key={i} style={{background:m.totalFlags>0?'#fff5f5':'transparent'}}>
+                          <tr key={i} style={{background:'transparent'}}>
                             <td style={{fontWeight:600,color:'#1a202c',fontSize:13,whiteSpace:'nowrap'}}>{m.member}</td>
                             <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('activity',m.activityPercent)}}>{m.activityPercent.toFixed(1)}%</td>
                             <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('hours',m.totalHours)}}>{m.totalHours.toFixed(1)}</td>
@@ -650,7 +653,7 @@ const Dashboard = () => {
 
                 {/* KEY CONCLUSIONS */}
                 <div style={{background:'#f7fafc',padding:20,borderRadius:8,border:'1px solid #e2e8f0',marginTop:16}}>
-                  <div style={{fontSize:16,fontWeight:700,color:'#2d3748',marginBottom:12}}>📋 Key Conclusions</div>
+                  <div style={{fontSize:16,fontWeight:700,color:'#2d3748',marginBottom:12}}>📋 Key Highlights</div>
                   {conclusions.map((c,i) => (
                     <div key={i} style={{display:'flex',alignItems:'flex-start',gap:8,fontSize:14,color:'#4a5568',lineHeight:1.6,marginBottom:8}}>
                       <span style={{color:c.color,fontWeight:700,flexShrink:0,fontSize:16}}>●</span>
