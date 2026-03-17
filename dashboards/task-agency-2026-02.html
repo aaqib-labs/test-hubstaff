@@ -465,17 +465,17 @@ const Dashboard = () => {
             const avgTot = n > 0 ? filteredData.reduce((s,m) => s + m.totalFlags, 0) / n : 0;
             return (
               <div style={{width:'100%', overflowX:'auto'}}>
-                <table style={{width:'100%', borderCollapse:'collapse', fontSize:15, tableLayout:'fixed'}}>
+                <table style={{width:'100%', minWidth:1080, borderCollapse:'collapse', fontSize:15, tableLayout:'fixed'}}>
                   <colgroup>
-                    <col style={{width:'17%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
-                    <col style={{width:'10.4%'}} />
+                    <col style={{width:'20%'}} />
+                    <col style={{width:'10%'}} />
+                    <col style={{width:'10%'}} />
+                    <col style={{width:'10%'}} />
+                    <col style={{width:'12%'}} />
+                    <col style={{width:'12%'}} />
+                    <col style={{width:'10%'}} />
+                    <col style={{width:'9%'}} />
+                    <col style={{width:'7%'}} />
                   </colgroup>
                   <thead>
                     <tr>
@@ -512,19 +512,45 @@ const Dashboard = () => {
                         <td style={td}><span style={{fontWeight:700, color:m.totalFlags===0?'#276749':m.redFlags>0?'#c53030':'#b7791f'}}>{m.totalFlags}</span></td>
                       </tr>
                     ))}
-                    <tr style={{background:'#f7fafc'}}>
-                      <td style={{...td, textAlign:'left', fontWeight:700, fontSize:12, color:'#4a5568'}}>Team Averages:</td>
-                      <td style={td}><span style={pillStyle('activity',  avgActivity)}>{avgActivity.toFixed(1)}%</span></td>
-                      <td style={td}><span style={pillStyle('hours',     avgHours)}>{avgHours.toFixed(1)} hrs</span></td>
-                      <td style={td}><span style={pillStyle('breakPct',  avgBrk)}>{avgBrk.toFixed(1)}%</span></td>
-                      <td style={td}><span style={pillStyle('low20Pct',  avgL20)}>{avgL20.toFixed(1)}%</span></td>
-                      <td style={td}><span style={pillStyle('low30Pct',  avgL30)}>{avgL30.toFixed(1)}%</span></td>
-                      <td style={{...td, color:'#718096', fontWeight:600, fontSize:12}}>{avgRed.toFixed(1)}</td>
-                      <td style={{...td, color:'#718096', fontWeight:600, fontSize:12}}>{avgYel.toFixed(1)}</td>
-                      <td style={{...td, color:'#4a5568', fontWeight:700, fontSize:12}}>{avgTot.toFixed(1)}</td>
-                    </tr>
                   </tbody>
                 </table>
+              </div>
+              <div style={{marginTop:16, background:'#f7fafc', border:'2px solid #e2e8f0', borderRadius:10, padding:'16px 20px'}}>
+                <div style={{fontWeight:700, fontSize:13, color:'#4a5568', marginBottom:14, textTransform:'uppercase', letterSpacing:'0.06em'}}>Team Averages</div>
+                <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr) repeat(2,1fr) repeat(3,1fr)', gap:'10px 16px'}}>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Activity %</span>
+                    <span style={pillStyle('activity', avgActivity)}>{avgActivity.toFixed(1)}%</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Total Hours</span>
+                    <span style={pillStyle('hours', avgHours)}>{avgHours.toFixed(1)} hrs</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Break Time</span>
+                    <span style={pillStyle('breakPct', avgBrk)}>{avgBrk.toFixed(1)}%</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Low Activity ≤20%</span>
+                    <span style={pillStyle('low20Pct', avgL20)}>{avgL20.toFixed(1)}%</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Low Activity ≤30%</span>
+                    <span style={pillStyle('low30Pct', avgL30)}>{avgL30.toFixed(1)}%</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Red/Orange Flags</span>
+                    <span style={{fontWeight:700, fontSize:15, color:avgRed>0?'#c53030':'#718096'}}>{avgRed.toFixed(1)}</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Yellow Flags</span>
+                    <span style={{fontWeight:700, fontSize:15, color:avgYel>0?'#b7791f':'#718096'}}>{avgYel.toFixed(1)}</span>
+                  </div>
+                  <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                    <span style={{fontSize:11, color:'#718096', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em'}}>Total Flags</span>
+                    <span style={{fontWeight:700, fontSize:15, color:avgTot===0?'#276749':avgRed>0?'#c53030':'#b7791f'}}>{avgTot.toFixed(1)}</span>
+                  </div>
+                </div>
               </div>
             );
           })()}
