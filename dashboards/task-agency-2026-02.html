@@ -279,17 +279,26 @@ const Dashboard = () => {
 
               {/* PERFORMANCE HIGHLIGHTS */}
               {(() => {
-                const bothFlags = filteredData.filter(m => m.redFlags > 0 && m.yellowFlags > 0).length;
-                const redCount  = filteredData.filter(m => m.redFlags > 0).length;
-                const over160   = filteredData.filter(m => m.totalHours > 160);
+                const redCount    = filteredData.filter(m => m.redFlags > 0).length;
+                const yellowOnly  = filteredData.filter(m => m.yellowFlags > 0 && m.redFlags === 0).length;
+                const bothFlags   = filteredData.filter(m => m.redFlags > 0 && m.yellowFlags > 0).length;
+                const over160     = filteredData.filter(m => m.totalHours > 160);
+                const flagSummary = (() => {
+                  const parts = [];
+                  if (redCount > 0)   parts.push(`${redCount} member${redCount !== 1 ? 's' : ''} had red/orange flags requiring immediate attention`);
+                  if (yellowOnly > 0) parts.push(`${yellowOnly} member${yellowOnly !== 1 ? 's' : ''} had yellow warnings requiring monitoring`);
+                  if (bothFlags > 0)  parts.push(`${bothFlags} member${bothFlags !== 1 ? 's' : ''} had both red/orange and yellow flags`);
+                  if (parts.length === 0) return `all ${n} member${n !== 1 ? 's' : ''} met SLA requirements with zero flags`;
+                  return parts.join(', and ');
+                })();
                 return (
                   <div style={{background: '#ebf8ff', padding: 16, borderRadius: 8, border: '1px solid #90cdf4', marginBottom: 8}}>
                     <div style={{fontSize: 18, fontWeight: 600, color: '#1e4e8c', marginBottom: 8}}>{MONTH} {YEAR} Performance Highlights</div>
                     <div style={{fontSize: 14, color: '#4a5568', lineHeight: 1.6}}>
                       The {activeSubTeam !== 'All' ? activeSubTeam : DEPT} team maintained an average activity level of {avgActivity.toFixed(1)}% across {n} team member{n !== 1 ? 's' : ''} in {MONTH} {YEAR}.
                       {' '}The team logged an average of {avgHours.toFixed(1)} hours per person, with {over160.length} member{over160.length !== 1 ? 's' : ''} exceeding 160 hours for the month.
-                      {' '}Performance highlights include {noViolations} member{noViolations !== 1 ? 's' : ''} meeting all SLA requirements with zero flags, while {redCount} member{redCount !== 1 ? 's' : ''} had red/orange flags requiring attention.
-                      {' '}{bothFlags} member{bothFlags !== 1 ? 's' : ''} have both red/orange and yellow flags.
+                      {' '}{noViolations} member{noViolations !== 1 ? 's' : ''} met all SLA requirements with zero flags
+                      {(redCount > 0 || yellowOnly > 0 || bothFlags > 0) ? `, while ${flagSummary}.` : '.'}
                     </div>
                   </div>
                 );
