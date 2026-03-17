@@ -118,10 +118,28 @@ const HeatCell = ({ metric, value, fmt, label }) => {
   return <div className={cls[s] || 'heatmap-cell cell-green'}>{label !== undefined ? label : (fmt ? fmt(value) : value)}</div>;
 };
 
+// Compute flags from SLA thresholds — orange (hours ≥200) counts as red/orange
+const computeFlags = (m) => {
+  const statuses = [
+    checkStatus('activity', m.activityPercent),
+    checkStatus('hours',    m.totalHours),
+    checkStatus('breakPct', m.breakPercent),
+    checkStatus('manualPct',m.manualPercent),
+    checkStatus('low20Pct', m.low20Percent),
+    checkStatus('low30Pct', m.low30Percent),
+  ];
+  const red    = statuses.filter(s => s === 'red' || s === 'orange').length;
+  const yellow = statuses.filter(s => s === 'yellow').length;
+  return { redFlags: red, yellowFlags: yellow, totalFlags: red + yellow };
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 const Dashboard = () => {
+  // Recompute flags from SLA thresholds — overrides CSV-provided values for accuracy
+  data.forEach(m => { const f = computeFlags(m); m.redFlags = f.redFlags; m.yellowFlags = f.yellowFlags; m.totalFlags = f.totalFlags; });
+
   const [tab, setTab] = useState(1);
   const [subTeamFilter, setSubTeamFilter] = useState('All');
   const [sortKey, setSortKey] = useState(null);
@@ -334,7 +352,7 @@ const Dashboard = () => {
                   { label:'Total Members',      value: fn,                                color:'#3182ce',                                                                     sub:'' },
                   { label:'Average Activity %', value: fAvgActivity.toFixed(1)+'%',       color: fAvgActivity<35?'#e53e3e':fAvgActivity<45?'#d69e2e':'#38a169',               sub:'Target ≥45%' },
                   { label:'Avg Hours Logged',   value: fAvgHours.toFixed(1),              color: fAvgHours<130?'#e53e3e':fAvgHours<150?'#d69e2e':'#38a169',                    sub:'Target 160–190' },
-                  { label:'Total Red Flags',    value: fTotalRedFlags,                    color: fTotalRedFlags>0?'#e53e3e':'#38a169',                                         sub:'Critical' },
+                  { label:'Total Red/Orange Flags', value: fTotalRedFlags,               color: fTotalRedFlags>0?'#e53e3e':'#38a169',                                         sub:'Critical' },
                   { label:'Total Yellow Flags', value: fTotalYellowFlags,                 color: fTotalYellowFlags>0?'#d69e2e':'#38a169',                                      sub:'Monitor' },
                   { label:'Total Flags',        value: fTotalFlags,                       color: fTotalFlags>0?'#718096':'#38a169',                                            sub:'All violations' },
                 ].map((k, i) => (
@@ -350,7 +368,7 @@ const Dashboard = () => {
               <div style={{background:'#ebf8ff',border:'1px solid #bee3f8',borderRadius:10,padding:'16px 18px',marginBottom:0,lineHeight:1.7,fontSize:13.5,color:'#2c5282'}}>
                 <strong>Performance Summary{subTeamFilter !== 'All' ? ` — ${subTeamFilter}` : ''}:</strong>{' '}
                 The {DEPT}{subTeamFilter !== 'All' ? ` — ${subTeamFilter} sub-team` : ' team'} maintained an average activity level of {fAvgActivity.toFixed(1)}% across {fn} team member{fn !== 1 ? 's' : ''} in {MONTH} {YEAR}. The team logged an average of {fAvgHours.toFixed(1)} hours per person, with {fOver160.length} member{fOver160.length !== 1 ? 's' : ''} exceeding 160 hours for the month.{' '}
-                Performance highlights include {fNoViolations} member{fNoViolations !== 1 ? 's' : ''} meeting all SLA requirements with zero flags, while {fRedMembers} member{fRedMembers !== 1 ? 's' : ''} had red flags requiring attention. {fBothFlags} member{fBothFlags !== 1 ? 's' : ''} have both red and yellow flags.
+                Performance highlights include {fNoViolations} member{fNoViolations !== 1 ? 's' : ''} meeting all SLA requirements with zero flags, while {fRedMembers} member{fRedMembers !== 1 ? 's' : ''} had red/orange flags requiring attention. {fBothFlags} member{fBothFlags !== 1 ? 's' : ''} have both red/orange and yellow flags.
               </div>
             </div>
           </details>

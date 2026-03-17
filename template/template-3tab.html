@@ -121,10 +121,28 @@ const HeatCell = ({ metric, value, fmt, label }) => {
   return <div className={cls[s] || 'heatmap-cell cell-green'}>{label !== undefined ? label : (fmt ? fmt(value) : value)}</div>;
 };
 
+// Compute flags from SLA thresholds — orange (hours ≥200) counts as red/orange
+const computeFlags = (m) => {
+  const statuses = [
+    checkStatus('activity', m.activityPercent),
+    checkStatus('hours',    m.totalHours),
+    checkStatus('breakPct', m.breakPercent),
+    checkStatus('manualPct',m.manualPercent),
+    checkStatus('low20Pct', m.low20Percent),
+    checkStatus('low30Pct', m.low30Percent),
+  ];
+  const red    = statuses.filter(s => s === 'red' || s === 'orange').length;
+  const yellow = statuses.filter(s => s === 'yellow').length;
+  return { redFlags: red, yellowFlags: yellow, totalFlags: red + yellow };
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 const Dashboard = () => {
+  // Recompute flags from SLA thresholds — overrides CSV-provided values for accuracy
+  data.forEach(m => { const f = computeFlags(m); m.redFlags = f.redFlags; m.yellowFlags = f.yellowFlags; m.totalFlags = f.totalFlags; });
+
   const [tab, setTab] = useState(1);
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
@@ -308,7 +326,7 @@ const Dashboard = () => {
                   { label:'Total Members',      value: n,                                color:'#3182ce',                                                              sub:'' },
                   { label:'Average Activity %', value: avgActivity.toFixed(1)+'%',       color: avgActivity<35?'#e53e3e':avgActivity<45?'#d69e2e':'#38a169',           sub:'Target ≥45%' },
                   { label:'Avg Hours Logged',   value: avgHours.toFixed(1),              color: avgHours<130?'#e53e3e':avgHours<150?'#d69e2e':'#38a169',               sub:'Target 160–190' },
-                  { label:'Total Red Flags',    value: totalRedFlags,                    color: totalRedFlags>0?'#e53e3e':'#38a169',                                   sub:'Critical' },
+                  { label:'Total Red/Orange Flags', value: totalRedFlags,                color: totalRedFlags>0?'#e53e3e':'#38a169',                                   sub:'Critical' },
                   { label:'Total Yellow Flags', value: totalYellowFlags,                 color: totalYellowFlags>0?'#d69e2e':'#38a169',                                sub:'Monitor' },
                   { label:'Total Flags',        value: totalFlags,                       color: totalFlags>0?'#718096':'#38a169',                                      sub:'All violations' },
                 ].map((k, i) => (
@@ -329,7 +347,7 @@ const Dashboard = () => {
                   <div style={{background:'#ebf8ff',border:'1px solid #bee3f8',borderRadius:10,padding:'16px 18px',lineHeight:1.7,fontSize:13.5,color:'#2c5282'}}>
                     <strong>Performance Summary:</strong>{' '}
                     The {DEPT} team maintained an average activity level of {avgActivity.toFixed(1)}% across {n} team member{n !== 1 ? 's' : ''} in {MONTH} {YEAR}. The team logged an average of {avgHours.toFixed(1)} hours per person, with {over160.length} member{over160.length !== 1 ? 's' : ''} exceeding 160 hours for the month.{' '}
-                    Performance highlights include {noViolations} member{noViolations !== 1 ? 's' : ''} meeting all SLA requirements with zero flags, while {redCount} member{redCount !== 1 ? 's' : ''} had red flags requiring attention. {bothFlags} member{bothFlags !== 1 ? 's' : ''} have both red and yellow flags.
+                    Performance highlights include {noViolations} member{noViolations !== 1 ? 's' : ''} meeting all SLA requirements with zero flags, while {redCount} member{redCount !== 1 ? 's' : ''} had red/orange flags requiring attention. {bothFlags} member{bothFlags !== 1 ? 's' : ''} have both red/orange and yellow flags.
                   </div>
                 );
               })()}
@@ -509,7 +527,7 @@ const Dashboard = () => {
                   <th onClick={() => sort('breakPercent')}>Break Time<SortIcon k="breakPercent"/></th>
                   <th onClick={() => sort('low20Percent')}>Low Activity ≤20%<SortIcon k="low20Percent"/></th>
                   <th onClick={() => sort('low30Percent')}>Low Activity ≤30%<SortIcon k="low30Percent"/></th>
-                  <th onClick={() => sort('redFlags')}>Red Flags<SortIcon k="redFlags"/></th>
+                  <th onClick={() => sort('redFlags')}>Red/Orange Flags<SortIcon k="redFlags"/></th>
                   <th onClick={() => sort('yellowFlags')}>Yellow Flags<SortIcon k="yellowFlags"/></th>
                   <th onClick={() => sort('totalFlags')}>Total Flags<SortIcon k="totalFlags"/></th>
                 </tr>
@@ -649,7 +667,7 @@ const Dashboard = () => {
                     {[
                       {label:'Avg Activity %',    val:tAvgActivity.toFixed(1)+'%', color:tAvgActivity<35?'#e53e3e':tAvgActivity<45?'#d69e2e':'#38a169'},
                       {label:'Avg Hours',          val:tAvgHours.toFixed(1),        color:tAvgHours<130?'#e53e3e':tAvgHours<150?'#d69e2e':'#38a169'},
-                      {label:'Total Red Flags',    val:tTotalRed,                   color:tTotalRed>0?'#e53e3e':'#38a169'},
+                      {label:'Total Red/Orange Flags', val:tTotalRed,               color:tTotalRed>0?'#e53e3e':'#38a169'},
                       {label:'Total Yellow Flags', val:tTotalYellow,                color:tTotalYellow>0?'#d69e2e':'#38a169'},
                     ].map((k,i) => (
                       <div key={i} style={{background:'white',borderRadius:8,padding:12,textAlign:'center',border:'1px solid #e2e8f0'}}>
@@ -768,7 +786,7 @@ const Dashboard = () => {
                       <span>
                         <strong>{tLeastHours.member}</strong> logged the fewest hours at <strong>{tLeastHours.totalHours.toFixed(1)} hrs</strong> ({Math.abs(tAvgHours - tLeastHours.totalHours).toFixed(1)} hrs below team avg){' '}
                         {tLeastHours.totalHours < 130
-                          ? <span style={{color:'#e53e3e',fontWeight:600}}>— red flag: significantly below expected hours.</span>
+                          ? <span style={{color:'#e53e3e',fontWeight:600}}>— red/orange flag: significantly below expected hours.</span>
                           : tLeastHours.totalHours < 150
                           ? <span style={{color:'#d69e2e',fontWeight:600}}>— yellow warning: below target range.</span>
                           : <span style={{color:'#276749'}}>— within acceptable range.</span>
@@ -802,7 +820,7 @@ const Dashboard = () => {
                       <span>
                         Team average break time is <strong>{tAvgBreak.toFixed(1)}%</strong> —{' '}
                         {tAvgBreak >= 12
-                          ? <span style={{color:'#e53e3e',fontWeight:600}}>red flag: exceeds the 12% critical threshold.</span>
+                          ? <span style={{color:'#e53e3e',fontWeight:600}}>red/orange flag: exceeds the 12% critical threshold.</span>
                           : tAvgBreak >= 10
                           ? <span style={{color:'#d69e2e',fontWeight:600}}>yellow warning: above the 10% target.</span>
                           : <span style={{color:'#276749'}}>within the target (&lt;10%).</span>
@@ -834,7 +852,7 @@ const Dashboard = () => {
                       <span>
                         Team average low activity (≤30%) is <strong>{tAvgLow30.toFixed(1)}%</strong> —{' '}
                         {tAvgLow30 >= 20
-                          ? <span style={{color:'#e53e3e',fontWeight:600}}>red flag: exceeds the 20% critical threshold.</span>
+                          ? <span style={{color:'#e53e3e',fontWeight:600}}>red/orange flag: exceeds the 20% critical threshold.</span>
                           : tAvgLow30 >= 10
                           ? <span style={{color:'#d69e2e',fontWeight:600}}>yellow warning: above the 10% target.</span>
                           : <span style={{color:'#276749'}}>within acceptable range.</span>
@@ -867,7 +885,7 @@ const Dashboard = () => {
                     {tTotalRed > 0 && (
                       <div style={bulletStyle}>
                         <span style={{color:'#e53e3e',fontWeight:700,flexShrink:0}}>•</span>
-                        <span><strong style={{color:'#e53e3e'}}>{tTotalRed} red flag{tTotalRed !== 1 ? 's' : ''}</strong> across {teamMembers.filter(m=>m.redFlags>0).length} member{teamMembers.filter(m=>m.redFlags>0).length !== 1 ? 's' : ''} ({teamMembers.filter(m=>m.redFlags>0).map(m=>m.member).join(', ')}) — immediate attention required.</span>
+                        <span><strong style={{color:'#e53e3e'}}>{tTotalRed} red/orange flag{tTotalRed !== 1 ? 's' : ''}</strong> across {teamMembers.filter(m=>m.redFlags>0).length} member{teamMembers.filter(m=>m.redFlags>0).length !== 1 ? 's' : ''} ({teamMembers.filter(m=>m.redFlags>0).map(m=>m.member).join(', ')}) — immediate attention required.</span>
                       </div>
                     )}
                     {tTotalYellow > 0 && (
