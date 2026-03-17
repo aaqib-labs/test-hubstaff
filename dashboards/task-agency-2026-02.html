@@ -103,6 +103,16 @@ const cellStyle = (metric, value) => {
   return { color: '#1a202c', fontWeight: 400 };
 };
 
+// Returns pill badge style for Tab 2 heatmap cell values
+const pillStyle = (metric, value) => {
+  const s = checkStatus(metric, value);
+  const base = { display:'inline-block', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:600, textAlign:'center', minWidth:80 };
+  if (s === 'red')    return { ...base, background:'#fff5f5', color:'#c53030', border:'1px solid #fed7d7' };
+  if (s === 'yellow') return { ...base, background:'#fffff0', color:'#b7791f', border:'1px solid #fefcbf' };
+  if (s === 'orange') return { ...base, background:'#fffaf0', color:'#c05621', border:'1px solid #fbd38d' };
+  return { ...base, background:'#f0fff4', color:'#276749', border:'1px solid #9ae6b4' };
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -375,23 +385,21 @@ const Dashboard = () => {
       {tab === 2 && (
         <div className="fade-in" style={{background: '#ffffff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.08)'}}>
 
-          {/* PART 1: 6 Accordion Legend Cards */}
-          <div style={{marginBottom: 32}}>
+          {/* PART 1: 5 Accordion Legend Cards — 2-column grid, no M card */}
+          <div style={{display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:12, marginBottom:24}}>
             {[
               { notation: 'A', label: 'Activity Level',          summary: 'Red < 35%  |  Yellow < 45%',
                 body: <><p><strong>What it measures:</strong> Employee engagement via keyboard and mouse activity during tracked work time.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks mouse movements, keyboard activity, and application focus time. Represents the percentage of working time where active engagement with work tools is detected.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &lt; 35% activity</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Very low engagement indicating potential productivity issues. Requires immediate review.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &lt; 45% activity</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Low engagement that warrants attention but is not critically low. Needs monitoring.</p><p style={{marginTop:8}}><strong>Expected Range:</strong> Varies by role and department expectations.</p></> },
-              { notation: 'H', label: 'Total Worked Hours',       summary: 'Red < 130h  |  Yellow < 150h  |  Orange >= 200h',
-                body: <><p><strong>What it measures:</strong> Total logged hours in Hubstaff during the month relative to expected hours.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Captures all time logged by the team member during the month, including both active and inactive periods. Target is 160+ hours per month (full-time schedule).</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &lt; 130 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Significantly below expected monthly hours. Requires immediate attention.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &lt; 150 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Below expected hours but not critical. Should be monitored.</p><p style={{marginTop:8,color:'#c05621',fontWeight:600}}>🟠 Orange Flag (Investigation Required): &gt;= 200 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Exceeding reasonable monthly workload — may indicate issues, inefficiency, or time tracking misuse.</p><p style={{marginTop:8}}><strong>Target Range:</strong> 160–190 hours per month.</p></> },
-              { notation: 'B', label: 'Total Break Time',         summary: 'Red >= 12%  |  Yellow > 10%',
-                body: <><p><strong>What it measures:</strong> Total time spent on breaks as a percentage of total worked hours.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks periods when team members are on official breaks and not actively working. Displayed as "X.X (X.X%)" showing both actual hours on break and percentage of total logged time. Target is to keep breaks below 10% to maximise productive hours.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &gt;= 12% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive break time reducing overall productive hours. Requires immediate intervention.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &gt; 10% and &lt; 12% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Higher than target break time. Not critical but needs attention.</p><p style={{marginTop:8}}><strong>Target:</strong> &lt; 10% of total worked hours.</p></> },
-              { notation: 'M', label: 'Total Manual Time',        summary: 'Red >= 10%  |  Yellow >= 5%',
-                body: <><p><strong>What it measures:</strong> Time manually entered instead of using the Hubstaff desktop app for automatic tracking.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks time manually entered by team members rather than automatically captured through the desktop application. High manual entry may indicate attempts to bypass monitoring or technical issues with the desktop app.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &gt;= 10% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive manual entry suggesting potential monitoring bypass. Requires immediate investigation.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &gt;= 5% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ High manual entry that should be monitored. May indicate technical issues or policy non-compliance.</p><p style={{marginTop:8}}><strong>Expected Range:</strong> Minimal — most time should be automatically tracked.</p></> },
-              { notation: '20', label: 'Low Activity Hours <=20%', summary: 'Red >= 15%  |  Yellow >= 7.5%',
-                body: <><p><strong>What it measures:</strong> Time spent with activity level at or below 20%, indicating very minimal engagement.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks periods when an employee's activity fell below 20%. Displayed as "X.X (X.X%)" showing both hours at this level and percentage of total logged time. May indicate stepping away from work, distractions, or system idle time.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &gt;= 15% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive very low activity requiring intervention. Indicates significant productivity concerns.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &gt;= 7.5% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Higher than ideal very low activity. Should be investigated.</p></> },
-              { notation: '30', label: 'Low Activity Hours <=30%', summary: 'Red >= 20%  |  Yellow >= 10%',
-                body: <><p><strong>What it measures:</strong> Time spent with activity level at or below 30%, representing low but not necessarily inactive engagement.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Broader metric capturing time when activity falls below 30%. Displayed as "X.X (X.X%)" showing hours and percentage of total time. Captures both &lt;=20% activity PLUS additional low activity between 20–30%. May indicate reduced productivity, meetings without computer interaction, or reading activities.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &gt;= 20% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive low activity indicating potential productivity issues. Requires investigation.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &gt;= 10% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Moderate low activity levels. May require context before escalation.</p></> },
+              { notation: 'H', label: 'Total Worked Hours',       summary: 'Red < 130h  |  Yellow < 150h  |  Orange ≥ 200h',
+                body: <><p><strong>What it measures:</strong> Total logged hours in Hubstaff during the month relative to expected hours.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Captures all time logged by the team member during the month, including both active and inactive periods. Target is 160+ hours per month (full-time schedule).</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): &lt; 130 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Significantly below expected monthly hours. Requires immediate attention.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &lt; 150 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Below expected hours but not critical. Should be monitored.</p><p style={{marginTop:8,color:'#c05621',fontWeight:600}}>🟠 Orange Flag (Investigation Required): ≥ 200 hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Exceeding reasonable monthly workload — may indicate issues, inefficiency, or time tracking misuse.</p><p style={{marginTop:8}}><strong>Target Range:</strong> 160–190 hours per month.</p></> },
+              { notation: 'B', label: 'Total Break Time',         summary: 'Red ≥ 12%  |  Yellow > 10%',
+                body: <><p><strong>What it measures:</strong> Total time spent on breaks as a percentage of total worked hours.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks periods when team members are on official breaks and not actively working. Displayed as "X.X (X.X%)" showing both actual hours on break and percentage of total logged time. Target is to keep breaks below 10% to maximise productive hours.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): ≥ 12% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive break time reducing overall productive hours. Requires immediate intervention.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: &gt; 10% and &lt; 12% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Higher than target break time. Not critical but needs attention.</p><p style={{marginTop:8}}><strong>Target:</strong> &lt; 10% of total worked hours.</p></> },
+              { notation: '20', label: 'Low Activity Hours ≤20%', summary: 'Red ≥ 15%  |  Yellow ≥ 7.5%',
+                body: <><p><strong>What it measures:</strong> Time spent with activity level at or below 20%, indicating very minimal engagement.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Tracks periods when an employee's activity fell below 20%. Displayed as "X.X (X.X%)" showing both hours at this level and percentage of total logged time. May indicate stepping away from work, distractions, or system idle time.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): ≥ 15% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive very low activity requiring intervention. Indicates significant productivity concerns.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: ≥ 7.5% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Higher than ideal very low activity. Should be investigated.</p></> },
+              { notation: '30', label: 'Low Activity Hours ≤30%', summary: 'Red ≥ 20%  |  Yellow ≥ 10%',
+                body: <><p><strong>What it measures:</strong> Time spent with activity level at or below 30%, representing low but not necessarily inactive engagement.</p><p style={{marginTop:8}}><strong>How it's measured:</strong> Broader metric capturing time when activity falls below 30%. Displayed as "X.X (X.X%)" showing hours and percentage of total time. Captures both ≤20% activity PLUS additional low activity between 20–30%. May indicate reduced productivity, meetings without computer interaction, or reading activities.</p><p style={{marginTop:8,color:'#c53030',fontWeight:600}}>🔴 Red Violation (Critical): ≥ 20% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Excessive low activity indicating potential productivity issues. Requires investigation.</p><p style={{marginTop:8,color:'#b7791f',fontWeight:600}}>🟡 Yellow Warning: ≥ 10% of Total Worked Hours</p><p style={{marginLeft:16,fontSize:13,marginTop:4}}>→ Moderate low activity levels. May require context before escalation.</p></> },
             ].map(metric => (
-              <details key={metric.notation} style={{background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, marginBottom: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+              <details key={metric.notation} style={{background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
                 <summary style={{display: 'flex', alignItems: 'center', padding: 16, cursor: 'pointer'}}>
                   <span style={{fontWeight: 600, fontSize: 14, color: '#2d3748', marginRight: 8}}>{metric.label}</span>
                   <span style={{display: 'inline-block', padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 700, background: '#edf2f7', color: '#4a5568', marginRight: 12}}>{metric.notation}</span>
@@ -403,54 +411,84 @@ const Dashboard = () => {
                 </div>
               </details>
             ))}
+            <div />{/* empty — row 3 col 2 */}
           </div>
 
           {/* PART 2: Heatmap Table */}
-          <h2 style={{fontSize: 20, fontWeight: 700, color: '#2d3748', marginBottom: 16}}>
+          {/* COLOR LEGEND PILLS */}
+          <div style={{display:'flex', flexWrap:'wrap', gap:8, marginBottom:16}}>
+            <span style={{background:'#fff5f5', border:'1px solid #fed7d7', color:'#c53030', padding:'4px 12px', borderRadius:9999, fontSize:12, fontWeight:600}}>🔴 Red Critical</span>
+            <span style={{background:'#fffff0', border:'1px solid #fefcbf', color:'#b7791f', padding:'4px 12px', borderRadius:9999, fontSize:12, fontWeight:600}}>⚠️ Yellow Warning</span>
+            <span style={{background:'#f0fff4', border:'1px solid #9ae6b4', color:'#276749', padding:'4px 12px', borderRadius:9999, fontSize:12, fontWeight:600}}>✅ Green Within target</span>
+            <span style={{background:'#fffaf0', border:'1px solid #fbd38d', color:'#c05621', padding:'4px 12px', borderRadius:9999, fontSize:12, fontWeight:600}}>🟠 Orange Overwork flag</span>
+          </div>
+          <h2 style={{fontSize: 20, fontWeight: 700, color: '#2d3748', marginBottom: 12}}>
             Full SLA Heatmap — {MONTH} {YEAR}{activeSubTeam !== 'All' ? ` — ${activeSubTeam}` : ''}
           </h2>
           <p style={{fontSize: 13, color: '#718096', marginBottom: 16}}>Click column headers to sort. Colors reflect SLA thresholds.</p>
-          <div style={{width: '100%', overflowX: 'auto'}}>
-            <table className="metric-table">
-              <thead>
-                <tr>
-                  <th onClick={() => sort('member')}>Member Name<SortIcon k="member"/></th>
-                  <th onClick={() => sort('activityPercent')}>A<SortIcon k="activityPercent"/></th>
-                  <th onClick={() => sort('totalHours')}>H<SortIcon k="totalHours"/></th>
-                  <th onClick={() => sort('breakPercent')}>B<SortIcon k="breakPercent"/></th>
-                  <th onClick={() => sort('manualPercent')}>M<SortIcon k="manualPercent"/></th>
-                  <th onClick={() => sort('low20Percent')}>20<SortIcon k="low20Percent"/></th>
-                  <th onClick={() => sort('low30Percent')}>30<SortIcon k="low30Percent"/></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedData.map((m, i) => (
-                  <tr key={i} style={{background: m.redFlags > 0 ? '#fff5f5' : 'transparent'}}>
-                    <td style={{fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', color: '#1a202c'}}>{m.member}</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('activity',  m.activityPercent)}}>{m.activityPercent.toFixed(1)}%</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('hours',     m.totalHours)}}>{m.totalHours.toFixed(1)} hrs</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('breakPct',  m.breakPercent)}}>{(m.breakHours||0).toFixed(1)} ({m.breakPercent.toFixed(1)}%)</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('manualPct', m.manualPercent)}}>{(m.manualHours||0).toFixed(1)} ({m.manualPercent.toFixed(1)}%)</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('low20Pct',  m.low20Percent)}}>{(m.low20Hours||0).toFixed(1)} ({m.low20Percent.toFixed(1)}%)</td>
-                    <td style={{fontFamily:'DM Mono,monospace',fontSize:12,...cellStyle('low30Pct',  m.low30Percent)}}>{(m.low30Hours||0).toFixed(1)} ({m.low30Percent.toFixed(1)}%)</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* TEAM AVERAGES ROW */}
-          {n > 0 && (
-            <div style={{marginTop: 8, padding: '10px 12px', background: '#edf2f7', borderRadius: 6, display: 'flex', gap: 24, flexWrap: 'wrap', fontSize: 12, fontWeight: 600, color: '#4a5568'}}>
-              <span>Team Averages:</span>
-              <span style={cellStyle('activity',  avgActivity)}>A: {avgActivity.toFixed(1)}%</span>
-              <span style={cellStyle('hours',      avgHours)}>H: {avgHours.toFixed(1)} hrs</span>
-              <span style={cellStyle('breakPct',   filteredData.reduce((s,m)=>s+m.breakPercent,0)/n)}>B: {(filteredData.reduce((s,m)=>s+m.breakPercent,0)/n).toFixed(1)}%</span>
-              <span style={cellStyle('manualPct',  filteredData.reduce((s,m)=>s+m.manualPercent,0)/n)}>M: {(filteredData.reduce((s,m)=>s+m.manualPercent,0)/n).toFixed(1)}%</span>
-              <span style={cellStyle('low20Pct',   filteredData.reduce((s,m)=>s+m.low20Percent,0)/n)}>20: {(filteredData.reduce((s,m)=>s+m.low20Percent,0)/n).toFixed(1)}%</span>
-              <span style={cellStyle('low30Pct',   filteredData.reduce((s,m)=>s+m.low30Percent,0)/n)}>30: {(filteredData.reduce((s,m)=>s+m.low30Percent,0)/n).toFixed(1)}%</span>
-            </div>
-          )}
+          {(() => {
+            const th = {color:'#718096', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 12px', borderBottom:'2px solid #e2e8f0', textAlign:'left', cursor:'pointer', whiteSpace:'nowrap'};
+            const td = {padding:'10px 12px', borderBottom:'1px solid #e2e8f0', verticalAlign:'middle'};
+            const avgBrk = n > 0 ? filteredData.reduce((s,m) => s + m.breakPercent, 0) / n : 0;
+            const avgL20 = n > 0 ? filteredData.reduce((s,m) => s + m.low20Percent, 0) / n : 0;
+            const avgL30 = n > 0 ? filteredData.reduce((s,m) => s + m.low30Percent, 0) / n : 0;
+            const avgRed = n > 0 ? filteredData.reduce((s,m) => s + m.redFlags, 0) / n : 0;
+            const avgYel = n > 0 ? filteredData.reduce((s,m) => s + m.yellowFlags, 0) / n : 0;
+            const avgTot = n > 0 ? filteredData.reduce((s,m) => s + m.totalFlags, 0) / n : 0;
+            return (
+              <div style={{width:'100%', overflowX:'auto'}}>
+                <table style={{width:'100%', borderCollapse:'collapse', fontSize:13}}>
+                  <thead>
+                    <tr>
+                      <th onClick={() => sort('member')} style={th}>MEMBER<SortIcon k="member"/></th>
+                      <th onClick={() => sort('activityPercent')} style={th}>ACTIVITY %<SortIcon k="activityPercent"/></th>
+                      <th onClick={() => sort('totalHours')} style={th}>TOTAL HOURS<SortIcon k="totalHours"/></th>
+                      <th onClick={() => sort('breakPercent')} style={th}>BREAK TIME<SortIcon k="breakPercent"/></th>
+                      <th onClick={() => sort('low20Percent')} style={th}>LOW ACTIVITY ≤20%<SortIcon k="low20Percent"/></th>
+                      <th onClick={() => sort('low30Percent')} style={th}>LOW ACTIVITY ≤30%<SortIcon k="low30Percent"/></th>
+                      <th onClick={() => sort('redFlags')} style={th}>RED/ORANGE FLAGS<SortIcon k="redFlags"/></th>
+                      <th onClick={() => sort('yellowFlags')} style={th}>YELLOW FLAGS<SortIcon k="yellowFlags"/></th>
+                      <th onClick={() => sort('totalFlags')} style={th}>TOTAL FLAGS<SortIcon k="totalFlags"/></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedData.map((m, i) => (
+                      <tr key={i} onMouseEnter={e => e.currentTarget.style.background='#f7fafc'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                        <td style={{...td, fontWeight:600, color:'#1a202c', whiteSpace:'nowrap'}}>{m.member}</td>
+                        <td style={td}><span style={pillStyle('activity',  m.activityPercent)}>{m.activityPercent.toFixed(1)}%</span></td>
+                        <td style={td}><span style={pillStyle('hours',     m.totalHours)}>{m.totalHours.toFixed(1)} hrs</span></td>
+                        <td style={td}><span style={pillStyle('breakPct',  m.breakPercent)}>{(m.breakHours||0).toFixed(1)} ({m.breakPercent.toFixed(1)}%)</span></td>
+                        <td style={td}><span style={pillStyle('low20Pct',  m.low20Percent)}>{(m.low20Hours||0).toFixed(1)} ({m.low20Percent.toFixed(1)}%)</span></td>
+                        <td style={td}><span style={pillStyle('low30Pct',  m.low30Percent)}>{(m.low30Hours||0).toFixed(1)} ({m.low30Percent.toFixed(1)}%)</span></td>
+                        <td style={td}>
+                          {m.redFlags > 0
+                            ? <span style={{display:'inline-flex', alignItems:'center', justifyContent:'center', width:28, height:28, borderRadius:9999, background:'#e53e3e', color:'white', fontSize:12, fontWeight:700}}>{m.redFlags}</span>
+                            : <span style={{color:'#718096'}}>0</span>}
+                        </td>
+                        <td style={td}>
+                          {m.yellowFlags > 0
+                            ? <span style={{display:'inline-flex', alignItems:'center', justifyContent:'center', minWidth:32, height:28, padding:'0 6px', borderRadius:9999, background:'#d69e2e', color:'white', fontSize:12, fontWeight:700}}>⚠️ {m.yellowFlags}</span>
+                            : <span style={{color:'#718096'}}>0</span>}
+                        </td>
+                        <td style={td}><span style={{fontWeight:700, color:m.totalFlags===0?'#276749':m.redFlags>0?'#c53030':'#b7791f'}}>{m.totalFlags}</span></td>
+                      </tr>
+                    ))}
+                    <tr style={{background:'#f7fafc'}}>
+                      <td style={{...td, fontWeight:700, fontSize:12, color:'#4a5568'}}>Team Averages:</td>
+                      <td style={td}><span style={pillStyle('activity',  avgActivity)}>{avgActivity.toFixed(1)}%</span></td>
+                      <td style={td}><span style={pillStyle('hours',     avgHours)}>{avgHours.toFixed(1)} hrs</span></td>
+                      <td style={td}><span style={pillStyle('breakPct',  avgBrk)}>{avgBrk.toFixed(1)}%</span></td>
+                      <td style={td}><span style={pillStyle('low20Pct',  avgL20)}>{avgL20.toFixed(1)}%</span></td>
+                      <td style={td}><span style={pillStyle('low30Pct',  avgL30)}>{avgL30.toFixed(1)}%</span></td>
+                      <td style={{...td, color:'#718096', fontWeight:600, fontSize:12}}>{avgRed.toFixed(1)}</td>
+                      <td style={{...td, color:'#718096', fontWeight:600, fontSize:12}}>{avgYel.toFixed(1)}</td>
+                      <td style={{...td, color:'#4a5568', fontWeight:700, fontSize:12}}>{avgTot.toFixed(1)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
 
         </div>
       )}
