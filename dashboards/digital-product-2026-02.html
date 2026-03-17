@@ -134,13 +134,14 @@ const HeatCell = ({ metric, value, fmt, label }) => {
   return <div className={cls[s] || 'heatmap-cell cell-green'}>{label !== undefined ? label : (fmt ? fmt(value) : value)}</div>;
 };
 
-// Compute flags from SLA thresholds — orange (hours ≥200) counts as red/orange
+// Compute flags from SLA thresholds — only metrics visible in the heatmap table
+// manualPct is excluded (not shown as a column) so counts match visible colored cells
+// orange (hours ≥200) counts as red/orange
 const computeFlags = (m) => {
   const statuses = [
     checkStatus('activity', m.activityPercent),
     checkStatus('hours',    m.totalHours),
     checkStatus('breakPct', m.breakPercent),
-    checkStatus('manualPct',m.manualPercent),
     checkStatus('low20Pct', m.low20Percent),
     checkStatus('low30Pct', m.low30Percent),
   ];
